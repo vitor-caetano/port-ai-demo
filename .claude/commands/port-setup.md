@@ -157,6 +157,29 @@ Create blueprints for `githubWorkflow`, `githubWorkflowRun`, and `githubPullRequ
 
 Use Port REST API to update the integration config with mappings for `pull-request`, `workflow`, and `workflow-run` kinds.
 
+## Step 4: Trigger Integration Resync
+
+After creating blueprints, trigger a resync so the integration populates them with data. Use the Port API:
+
+```bash
+# Get access token
+curl -s -X POST 'https://api.getport.io/v1/auth/access_token' \
+  -H 'Content-Type: application/json' \
+  -d '{"clientId": "'"$PORT_CLIENT_ID"'", "clientSecret": "'"$PORT_CLIENT_SECRET"'"}' \
+  | jq -r '.accessToken' > ./port_access_token.txt
+
+# Trigger resync (replace INTEGRATION_ID with actual ID)
+curl -s -X PATCH 'https://api.getport.io/v1/integration/INTEGRATION_ID' \
+  -H "Authorization: Bearer $(cat ./port_access_token.txt)" \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+
+# Cleanup
+rm -f ./port_access_token.txt
+```
+
+Get the integration ID from `mcp__port-vscode-eu__list_integrations`.
+
 ---
 
 # Part 3: Self-Service Actions for CRDs
