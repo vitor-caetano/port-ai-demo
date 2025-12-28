@@ -5,8 +5,8 @@ metadata:
   labels:
     app-owner: vfarcic
 spec:
-  image: vfarcic/silly-demo
-  tag: "1.5.235"
+  image: ghcr.io/vfarcic/silly-demo
+  tag: "v1.5.235"
   port: 8080
   host: silly-demo.54.159.206.46.nip.io
   scaling:
