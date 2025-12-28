@@ -1,0 +1,20 @@
+apiVersion: devopstoolkit.live/v1beta1
+kind: App
+metadata:
+  name: silly-demo
+  labels:
+    app-owner: vfarcic
+spec:
+  image: vfarcic/silly-demo
+  tag: "1.5.235"
+  port: 8080
+  host: silly-demo.54.159.206.46.nip.io
+  scaling:
+    enabled: true
+    min: 2
+    max: 5
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        type: backend
+        location: local
