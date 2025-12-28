@@ -3,6 +3,7 @@ apiVersion: devopstoolkit.live/v1beta1
 kind: SQL
 metadata:
   name: my-db
+  namespace: a-team
 spec:
   version: "13"
   size: small

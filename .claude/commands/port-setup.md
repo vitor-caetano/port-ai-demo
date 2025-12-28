@@ -18,7 +18,7 @@ Check the following and instruct the user to install/configure if missing:
 - **Always check latest versions** of third-party tools (Helm charts, GitHub Actions, etc.) before creating manifests. Use `helm search repo` or check the official documentation.
 - **Consult Port MCP tools** when in doubt - use them to explore existing blueprints, entities, actions, and integrations.
 - **Validate each step** before moving to the next - verify resources are created, synced, and working as expected.
-- **User actions vs automated**: Some steps require user action (marked with "User action required") - present these as instructions. Other steps can be executed directly.
+- **User actions vs automated**: Some steps require user action (marked with "User action required") - present these as instructions, then **STOP and wait for user confirmation** before proceeding to the next step.
 
 ---
 
@@ -159,25 +159,7 @@ Use Port REST API to update the integration config with mappings for `pull-reque
 
 ---
 
-# Part 3: Organize Catalog with Folders
-
-## Step 1: Create Folders in Port UI (User action required)
-
-Folder creation via REST API is not supported. Create folders manually:
-
-1. Go to [Port Catalog](https://app.getport.io/organization/catalog)
-2. Click `+ New` → `New folder`
-3. Create folders for logical groupings (e.g., "GitHub", "Kubernetes Core", "Kubernetes CRDs")
-
-**Note:** Identifiers are auto-generated using snake_case.
-
-## Step 2: Move Pages into Folders via API
-
-Use REST API to move pages. The `"after": null` field is required when moving pages to empty folders.
-
----
-
-# Part 4: Self-Service Actions for CRDs
+# Part 3: Self-Service Actions for CRDs
 
 Create Port self-service actions that trigger GitHub workflows to manage CRD manifests.
 

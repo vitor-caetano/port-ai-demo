@@ -2,6 +2,7 @@ apiVersion: devopstoolkit.live/v1beta1
 kind: App
 metadata:
   name: sillier-demo
+  namespace: a-team
   labels:
     app-owner: vfarcic
 spec:
