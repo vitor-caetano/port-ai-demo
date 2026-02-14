@@ -49,8 +49,6 @@ spec:
                         blueprint: '"workload"'
                         properties:
                           version: .spec.template.spec.containers[0].image | split(":") | last
-                        relations:
-                          namespace: .metadata.namespace + "-" + env.CLUSTER_NAME
               - kind: devopstoolkit.live/v1beta1/apps
                 selector:
                   query: "true"
@@ -63,7 +61,7 @@ spec:
                         properties:
                           image: .spec.image
                           tag: .spec.tag
-                          host: .status.host // .spec.host
+                          host: '"https://" + (.status.host // .spec.host)'
                           port: .spec.port
                           scalingEnabled: .spec.scaling.enabled
                           scalingMin: .spec.scaling.min
