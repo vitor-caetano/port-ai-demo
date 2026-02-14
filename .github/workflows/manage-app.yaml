@@ -1,0 +1,134 @@
+name: Manage Crossplane App
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Action to perform
+        required: true
+        type: choice
+        options:
+          - create
+          - update
+          - delete
+      name:
+        description: App name
+        required: true
+      namespace:
+        description: Namespace
+        required: true
+        default: a-team
+      image:
+        description: Container image
+        required: false
+        default: ghcr.io/vfarcic/silly-demo
+      tag:
+        description: Image tag
+        required: false
+        default: "latest"
+      host:
+        description: Host URL
+        required: false
+      port:
+        description: Container port
+        required: false
+        default: "8080"
+      scaling_min:
+        description: Minimum replicas
+        required: false
+        default: "2"
+      scaling_max:
+        description: Maximum replicas
+        required: false
+        default: "5"
+      port_run_id:
+        description: Port action run ID
+        required: true
+
+jobs:
+  manage-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report running
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          runId: ${{ inputs.port_run_id }}
+          logMessage: "Starting ${{ inputs.action }} for app '${{ inputs.name }}' in namespace '${{ inputs.namespace }}'"
+
+      - name: Create/Update manifest
+        if: inputs.action != 'delete'
+        run: |
+          cat > apps/${{ inputs.name }}.yaml << 'MANIFEST'
+          apiVersion: devopstoolkit.live/v1beta1
+          kind: App
+          metadata:
+            name: ${{ inputs.name }}
+            namespace: ${{ inputs.namespace }}
+            labels:
+              app-owner: port-self-service
+          spec:
+            crossplane:
+              compositionSelector:
+                matchLabels:
+                  location: local
+                  type: backend
+            image: ${{ inputs.image }}
+            tag: "${{ inputs.tag }}"
+            host: ${{ inputs.name }}.devopstoolkit.ai
+            port: ${{ inputs.port }}
+            scaling:
+              enabled: true
+              min: ${{ inputs.scaling_min }}
+              max: ${{ inputs.scaling_max }}
+          MANIFEST
+
+          # Override host if provided
+          if [ -n "${{ inputs.host }}" ]; then
+            sed -i "s|host: ${{ inputs.name }}.devopstoolkit.ai|host: ${{ inputs.host }}|" apps/${{ inputs.name }}.yaml
+          fi
+
+      - name: Delete manifest
+        if: inputs.action == 'delete'
+        run: |
+          rm -f apps/${{ inputs.name }}.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "${{ inputs.action }} app: ${{ inputs.name }}"
+            git push
+          fi
+
+      - name: Report success
+        if: success()
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          runId: ${{ inputs.port_run_id }}
+          status: "SUCCESS"
+          logMessage: "Successfully completed ${{ inputs.action }} for app '${{ inputs.name }}'"
+
+      - name: Report failure
+        if: failure()
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          runId: ${{ inputs.port_run_id }}
+          status: "FAILURE"
+          logMessage: "Failed to ${{ inputs.action }} app '${{ inputs.name }}'"
