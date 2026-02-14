@@ -25,6 +25,20 @@ spec:
         configMap:
           config:
             resources:
+              - kind: Cluster
+                selector:
+                  query: "true"
+                port:
+                  entity:
+                    mappings:
+                      - identifier: env.CLUSTER_NAME
+                        title: env.CLUSTER_NAME
+                        blueprint: '"argocdCluster"'
+                        properties:
+                          server: .metadata.server
+                          serverVersion: .status.serverVersion
+                          labels: .metadata.labels
+                          updatedAt: .metadata.lastRefreshedAt
               - kind: v1/namespaces
                 selector:
                   query: .metadata.name | startswith("kube") | not
