@@ -21,6 +21,7 @@ spec:
         extraEnv:
           - name: CLUSTER_NAME
             value: dot
+        createMissingRelatedEntities: true
         configMap:
           config:
             resources:
